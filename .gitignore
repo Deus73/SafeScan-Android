@@ -1,0 +1,8 @@
+safescan.keystore
+*.idsig
+build/
+app/build/
+.gradle/
+local.properties
+*.jks
+*.keystore
