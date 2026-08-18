@@ -10,6 +10,6 @@ $ok = Read-Host "Doorgaan met forensische verzameling naar $out? Typ JA"
 if ($ok -ne 'JA') { Write-Host 'Geannuleerd.'; exit 1 }
 $full = (Resolve-Path $out).Path
 $linuxOut = (wsl.exe wslpath -a "$full").Trim()
-$cmd = "set -e; command -v adb >/dev/null || { echo 'ADB ontbreekt binnen WSL; installeer platform-tools in WSL of gebruik de officiële Windows AndroidQF binary.'; exit 1; }; mkdir -p '$linuxOut'; python3 -m venv '$linuxOut/.venv'; '$linuxOut/.venv/bin/python' -m pip install --upgrade pip mvt; command -v androidqf || { echo 'Installeer AndroidQF vanuit https://github.com/mvt-project/androidqf/releases en voeg het toe aan PATH.'; exit 1; }; androidqf -fast -output '$linuxOut' && '$linuxOut/.venv/bin/mvt-android' check-androidqf '$linuxOut' | tee '$linuxOut/mvt-summary.txt'"
+$cmd = "set -e; command -v adb >/dev/null || { echo 'ADB ontbreekt binnen WSL; voer sudo apt update && sudo apt install -y adb uit.'; exit 1; }; mkdir -p '$linuxOut'; python3 -m venv '$linuxOut/.venv'; '$linuxOut/.venv/bin/python' -m pip install --upgrade pip mvt; curl -fL https://github.com/mvt-project/androidqf/releases/download/v1.8.3/androidqf_linux_amd64_1.8.3 -o '$linuxOut/androidqf'; chmod +x '$linuxOut/androidqf'; '$linuxOut/androidqf' -fast -output '$linuxOut' && '$linuxOut/.venv/bin/mvt-android' check-androidqf '$linuxOut' | tee '$linuxOut/mvt-summary.txt'"
 wsl.exe bash -lc $cmd
 Write-Host "Klaar. Resultaten staan in $full" -ForegroundColor Green

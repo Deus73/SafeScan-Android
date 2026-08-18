@@ -4,7 +4,7 @@ Gebruik dit alleen op je eigen toestel of met uitdrukkelijke toestemming.
 
 ## Linux — kopiëren en plakken
 
-1. Installeer ADB, Python en AndroidQF. Download AndroidQF via de [officiële releases](https://github.com/mvt-project/androidqf/releases) en zet het programma in `PATH`.
+1. Open een terminal. Op Debian/Ubuntu installeert het script ADB, Python en AndroidQF automatisch; je wordt om je sudo-wachtwoord gevraagd.
 2. Zet op de telefoon tijdelijk **USB-debugging** aan en accepteer de computer.
 3. Voer uit vanuit deze map:
 
@@ -16,9 +16,9 @@ Typ `JA` wanneer daarom wordt gevraagd. De resultaten komen in een nieuwe map `s
 
 ## Windows — PowerShell
 
-1. Installeer **WSL2 Ubuntu**, Android SDK Platform-Tools en AndroidQF.
-2. Installeer ADB ook binnen WSL (`sudo apt install adb python3-venv`).
-3. Zet USB-debugging aan en controleer in WSL met `adb devices` of het toestel zichtbaar is.
+1. Installeer WSL2 Ubuntu: `wsl --install -d Ubuntu`, herstart Windows en open Ubuntu.
+2. Installeer ADB in Ubuntu: `sudo apt update && sudo apt install -y adb python3-venv curl`.
+3. Zet USB-debugging aan en controleer in Ubuntu met `adb devices` of het toestel zichtbaar is.
 4. Open PowerShell in deze map:
 
 ```powershell
