@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cat <<'BANNER'
- ____        __      ____                  
-/ __/__  ___/ /_____/ __/  DEUS_GROUP
-\ \/ _ \/ _  / __/ _ \__ \   SafeScan
-/_/\___/\_,_/\__/\___/___/   AndroidQF + MVT
-BANNER
+logo="$(dirname "$0")/safescan-logo.ascii"
+[ -f "$logo" ] && cat "$logo"
 out="${1:-./safescan-forensics-$(date +%Y%m%d-%H%M%S)}"
 if command -v apt-get >/dev/null; then sudo apt-get update && sudo apt-get install -y adb python3 python3-venv curl; fi
 command -v adb >/dev/null || { echo "ADB ontbreekt. Installeer Android SDK Platform Tools."; exit 1; }

@@ -1,10 +1,6 @@
 $ErrorActionPreference = 'Stop'
-Write-Host @'
- ____        __      ____                  
-/ __/__  ___/ /_____/ __/  DEUS_GROUP
-\ \/ _ \/ _  / __/ _ \__ \   SafeScan
-/_/\___/\_,_/\__/\___/___/   AndroidQF + MVT
-'@
+$logo = Join-Path $PSScriptRoot 'safescan-logo.ascii'
+if (Test-Path $logo) { Get-Content $logo | Write-Host }
 $out = if ($args.Count -gt 0) { $args[0] } else { "safescan-forensics-$((Get-Date).ToString('yyyyMMdd-HHmmss'))" }
 if (-not (Get-Command adb -ErrorAction SilentlyContinue)) { Write-Host 'ADB ontbreekt. Installeer Android SDK Platform-Tools en voeg platform-tools toe aan PATH.'; exit 1 }
 if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue)) { Write-Host 'WSL ontbreekt. Installeer WSL (bij voorkeur Ubuntu) en start dit script opnieuw.'; exit 1 }
