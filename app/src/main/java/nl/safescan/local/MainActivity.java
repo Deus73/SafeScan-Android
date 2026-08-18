@@ -1,4 +1,5 @@
 package nl.safescan.local;
+// i18n refactor checkpoint: behavior-preserving localization work starts here.
 import android.annotation.SuppressLint;import android.accounts.*;import android.app.*;import android.app.admin.DevicePolicyManager;import android.content.*;import android.content.pm.*;import android.graphics.*;import android.graphics.pdf.PdfDocument;import android.net.Uri;import android.os.Build;import android.os.Bundle;import android.os.Environment;import android.os.StatFs;import android.os.SystemClock;import android.provider.Settings;import android.telephony.TelephonyManager;import android.util.Base64;import android.webkit.*;import java.io.*;import java.text.*;import java.util.*;import org.json.*;
 public class MainActivity extends Activity{
  private WebView web;private byte[] report;private static final int SAVE=9,SAVE_PDF=10,BACKUP=11,RESTORE=12;
