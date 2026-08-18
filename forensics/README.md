@@ -2,9 +2,9 @@
 
 Gebruik dit alleen op je eigen toestel of met uitdrukkelijke toestemming.
 
-## Linux
+## Linux — kopiëren en plakken
 
-1. Installeer ADB, Python en AndroidQF. Download AndroidQF via de officiële releases en zet het programma in `PATH`.
+1. Installeer ADB, Python en AndroidQF. Download AndroidQF via de [officiële releases](https://github.com/mvt-project/androidqf/releases) en zet het programma in `PATH`.
 2. Zet op de telefoon tijdelijk **USB-debugging** aan en accepteer de computer.
 3. Voer uit vanuit deze map:
 
@@ -14,7 +14,7 @@ Gebruik dit alleen op je eigen toestel of met uitdrukkelijke toestemming.
 
 Typ `JA` wanneer daarom wordt gevraagd. De resultaten komen in een nieuwe map `safescan-forensics-*`.
 
-## Windows
+## Windows — PowerShell
 
 1. Installeer **WSL2 Ubuntu**, Android SDK Platform-Tools en AndroidQF.
 2. Installeer ADB ook binnen WSL (`sudo apt install adb python3-venv`).
@@ -28,4 +28,4 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 Typ `JA`. De resultaten worden in `safescan-forensics-*` opgeslagen.
 
-AndroidQF verzamelt; MVT analyseert. De scan verwijdert niets en maakt geen automatische wijzigingen.
+AndroidQF verzamelt; MVT analyseert. De scan verwijdert niets en maakt geen automatische wijzigingen. Controleer rapporten vóór delen op toestel- en accountgegevens.
