@@ -23,6 +23,7 @@ step "3/6 MVT-omgeving voorbereiden"
 venv="$out/.venv"
 python3 -m venv "$venv"
 "$venv/bin/python" -m pip install --upgrade pip mvt
+chmod +x "$venv/bin/mvt-android" 2>/dev/null || true
 step "4/6 AndroidQF ophalen/controleren"
 if ! command -v androidqf >/dev/null; then
   arch=$(uname -m); [ "$arch" = x86_64 ] && asset=androidqf_linux_amd64_1.8.3 || asset=androidqf_linux_arm64_1.8.3
@@ -32,5 +33,9 @@ else androidqf=$(command -v androidqf); fi
 step "5/6 AndroidQF verzamelt gegevens (dit kan lang duren)"
 "$androidqf" -fast -output "$out"
 step "6/6 MVT analyseert de verzamelde gegevens"
-"$venv/bin/mvt-android" check-androidqf "$out" | tee "$out/mvt-summary.txt"
+if [ -x "$venv/bin/mvt-android" ]; then
+  "$venv/bin/mvt-android" check-androidqf "$out" | tee "$out/mvt-summary.txt"
+else
+  "$venv/bin/python" -m mvt.android.cli check-androidqf "$out" | tee "$out/mvt-summary.txt"
+fi
 step "KLAAR — rapport: $out/mvt-summary.txt"
