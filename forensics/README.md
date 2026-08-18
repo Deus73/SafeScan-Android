@@ -1,5 +1,12 @@
 # AndroidQF + MVT
 
+```text
+ ____        __      ____
+/ __/__  ___/ /_____/ __/  DEUS_GROUP
+\ \/ _ \/ _  / __/ _ \__ \   SafeScan
+/_/\___/\_,_/\__/\___/___/   AndroidQF + MVT
+```
+
 Gebruik dit alleen op je eigen toestel of met uitdrukkelijke toestemming.
 
 ## Linux — kopiëren en plakken
