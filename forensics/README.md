@@ -36,3 +36,5 @@ Set-ExecutionPolicy -Scope Process Bypass
 Typ `JA`. De resultaten worden in `safescan-forensics-*` opgeslagen.
 
 AndroidQF verzamelt; MVT analyseert. De scan verwijdert niets en maakt geen automatische wijzigingen. Controleer rapporten vóór delen op toestel- en accountgegevens.
+
+ASCII-logo: [`safescan-logo.ascii`](safescan-logo.ascii)
