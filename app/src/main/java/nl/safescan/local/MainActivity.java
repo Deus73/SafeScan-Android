@@ -10,6 +10,7 @@ public class MainActivity extends Activity{
  private static final String ASSET_ORIGIN="https://appassets.androidplatform.net/assets/";
  private WebResourceResponse assetResponse(String url){
   try{
+   android.util.Log.i("SafeScanWebView","ASSET_REQUEST "+url);
    Uri uri=Uri.parse(url); String path=uri.getPath();
    if(path==null||!path.startsWith("/assets/"))return null;
    String asset=path.substring("/assets/".length());
@@ -20,13 +21,14 @@ public class MainActivity extends Activity{
    else if(lower.endsWith(".css"))mime="text/css"; else if(lower.endsWith(".json"))mime="application/json";
    else if(lower.endsWith(".png"))mime="image/png"; else if(lower.endsWith(".jpg")||lower.endsWith(".jpeg"))mime="image/jpeg";
    else if(lower.endsWith(".svg"))mime="image/svg+xml"; else if(lower.endsWith(".woff2"))mime="font/woff2";
-   return new WebResourceResponse(mime,null,in);
+   String encoding=(mime.startsWith("text/")||mime.contains("javascript")||mime.contains("json")||mime.contains("svg"))?"UTF-8":null;
+   WebResourceResponse response=new WebResourceResponse(mime,encoding,in);response.setStatusCodeAndReasonPhrase(200,"OK");return response;
   }catch(Exception e){android.util.Log.e("SafeScanWebView","ASSET_ERROR "+url,e);return null;}
  }
  @SuppressLint({"SetJavaScriptEnabled","JavascriptInterface"})public void onCreate(Bundle b){
-  super.onCreate(b);try{WebView.setDataDirectorySuffix("safescan");}catch(IllegalStateException ignored){}i18n=new I18n(this);web=new WebView(this);setContentView(web);
+  super.onCreate(b);i18n=new I18n(this);web=new WebView(this);setContentView(web);
   WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);
-  settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setAllowFileAccessFromFileURLs(false);settings.setAllowUniversalAccessFromFileURLs(false);
+  settings.setAllowFileAccess(true);settings.setAllowContentAccess(false);settings.setAllowFileAccessFromFileURLs(false);settings.setAllowUniversalAccessFromFileURLs(false);
   web.addJavascriptInterface(new Bridge(),"SafeScanAndroid");
   web.setWebChromeClient(new WebChromeClient(){@Override public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SafeScanWebView","CONSOLE "+m.message()+" @"+m.sourceId()+":"+m.lineNumber()+" "+m.messageLevel());return true;}});
   web.setWebViewClient(new WebViewClient(){
@@ -37,7 +39,7 @@ public class MainActivity extends Activity{
    @Override public WebResourceResponse shouldInterceptRequest(WebView v,String u){if(u.startsWith(ASSET_ORIGIN))return assetResponse(u);return null;}
    @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){String u=r.getUrl().toString();android.util.Log.i("SafeScanWebView","NAV "+u);return !u.startsWith(ASSET_ORIGIN);}
   });
-  String entry=ASSET_ORIGIN+"site/index.html";android.util.Log.i("SafeScanWebView","WEBVIEW_LOAD_URL="+entry);web.loadUrl(entry);
+  String entry="file:///android_asset/site/index.html";android.util.Log.i("SafeScanWebView","WEBVIEW_LOAD_URL="+entry);web.loadUrl(entry);
  }
 
  public class Bridge{
