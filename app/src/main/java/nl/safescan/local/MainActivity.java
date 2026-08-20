@@ -7,7 +7,39 @@ public class MainActivity extends Activity{
  private String tr(String key){return i18n.t(currentLocale(),key);}
  private String tr(String key,Object... params){return i18n.t(currentLocale(),key,params);}
  private String jsQuote(String value){return JSONObject.quote(value==null?"":value);}
- @SuppressLint({"SetJavaScriptEnabled","JavascriptInterface"})public void onCreate(Bundle b){super.onCreate(b);i18n=new I18n(this);web=new WebView(this);setContentView(web);web.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE,null);WebSettings s=web.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(false);s.setAllowFileAccessFromFileURLs(false);s.setAllowUniversalAccessFromFileURLs(false);web.addJavascriptInterface(new Bridge(),"SafeScanAndroid");web.setWebChromeClient(new WebChromeClient(){public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SafeScanWebView",m.message()+" @"+m.sourceId()+":"+m.lineNumber());return true;}});web.setWebViewClient(new WebViewClient(){public void onPageStarted(WebView v,String u,android.graphics.Bitmap f){android.util.Log.i("SafeScanWebView","START "+u+" "+System.currentTimeMillis());}public void onPageFinished(WebView v,String u){android.util.Log.i("SafeScanWebView","FINISH "+u+" "+System.currentTimeMillis());}public void onReceivedError(WebView v,WebResourceRequest r,WebResourceError e){android.util.Log.e("SafeScanWebView","ERROR "+r.getUrl()+" "+e.getErrorCode()+" "+e.getDescription());}public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){android.util.Log.i("SafeScanWebView","NAV "+r.getUrl());return!r.getUrl().toString().startsWith("file:///android_asset/site/");}});android.util.Log.i("SafeScanWebView","WEBVIEW_LOAD_URL=file:///android_asset/site/index.html");web.loadUrl("file:///android_asset/site/index.html");}
+ private static final String ASSET_ORIGIN="https://appassets.androidplatform.net/assets/";
+ private WebResourceResponse assetResponse(String url){
+  try{
+   Uri uri=Uri.parse(url); String path=uri.getPath();
+   if(path==null||!path.startsWith("/assets/"))return null;
+   String asset=path.substring("/assets/".length());
+   if(asset.contains(".."))return null;
+   InputStream in=getAssets().open(asset);
+   String lower=asset.toLowerCase(Locale.ROOT); String mime="application/octet-stream";
+   if(lower.endsWith(".html"))mime="text/html"; else if(lower.endsWith(".js"))mime="application/javascript";
+   else if(lower.endsWith(".css"))mime="text/css"; else if(lower.endsWith(".json"))mime="application/json";
+   else if(lower.endsWith(".png"))mime="image/png"; else if(lower.endsWith(".jpg")||lower.endsWith(".jpeg"))mime="image/jpeg";
+   else if(lower.endsWith(".svg"))mime="image/svg+xml"; else if(lower.endsWith(".woff2"))mime="font/woff2";
+   return new WebResourceResponse(mime,null,in);
+  }catch(Exception e){android.util.Log.e("SafeScanWebView","ASSET_ERROR "+url,e);return null;}
+ }
+ @SuppressLint({"SetJavaScriptEnabled","JavascriptInterface"})public void onCreate(Bundle b){
+  super.onCreate(b);try{WebView.setDataDirectorySuffix("safescan");}catch(IllegalStateException ignored){}i18n=new I18n(this);web=new WebView(this);setContentView(web);
+  WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);
+  settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setAllowFileAccessFromFileURLs(false);settings.setAllowUniversalAccessFromFileURLs(false);
+  web.addJavascriptInterface(new Bridge(),"SafeScanAndroid");
+  web.setWebChromeClient(new WebChromeClient(){@Override public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SafeScanWebView","CONSOLE "+m.message()+" @"+m.sourceId()+":"+m.lineNumber()+" "+m.messageLevel());return true;}});
+  web.setWebViewClient(new WebViewClient(){
+   @Override public void onPageStarted(WebView v,String u,android.graphics.Bitmap f){android.util.Log.i("SafeScanWebView","START "+u+" "+System.currentTimeMillis());}
+   @Override public void onPageFinished(WebView v,String u){android.util.Log.i("SafeScanWebView","FINISH "+u+" "+System.currentTimeMillis());}
+   @Override public void onReceivedError(WebView v,WebResourceRequest r,WebResourceError e){android.util.Log.e("SafeScanWebView","ERROR "+r.getUrl()+" "+e.getErrorCode()+" "+e.getDescription());}
+   @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){String u=r.getUrl().toString();if(u.startsWith(ASSET_ORIGIN))return assetResponse(u);return null;}
+   @Override public WebResourceResponse shouldInterceptRequest(WebView v,String u){if(u.startsWith(ASSET_ORIGIN))return assetResponse(u);return null;}
+   @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){String u=r.getUrl().toString();android.util.Log.i("SafeScanWebView","NAV "+u);return !u.startsWith(ASSET_ORIGIN);}
+  });
+  String entry=ASSET_ORIGIN+"site/index.html";android.util.Log.i("SafeScanWebView","WEBVIEW_LOAD_URL="+entry);web.loadUrl(entry);
+ }
+
  public class Bridge{
   @JavascriptInterface public void setLocale(String locale){if(locale==null)return;String n=locale.toLowerCase(Locale.ROOT);if(!Arrays.asList("nl","en","de","fr","es","it","pt","pl").contains(n))n="nl";getSharedPreferences("safescan",MODE_PRIVATE).edit().putString("locale",n).commit();}
   @JavascriptInterface public void startScan(String locale){setLocale(locale);startScan();}
