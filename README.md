@@ -39,3 +39,23 @@ SafeScan wijzigt beveiligingsinstellingen niet stilzwijgend. Maak eerst een back
 ## Privacy
 
 Er zijn geen screenshots met toestelgegevens opgenomen. Exporteer of deel rapporten alleen nadat je modelnaam, Android-ID, accounts en andere identificerende gegevens hebt gecontroleerd.
+
+## WebView-probleem op Ulefone Armor Mini
+
+Op sommige Ulefone-toestellen verschijnt een leeg scherm wanneer Android System WebView niet correct is bijgewerkt. In logcat staat dan bijvoorbeeld:
+
+```text
+Unable to launch ... SandboxedProcessService
+process is bad
+```
+
+Dit gebeurt vóór SafeScan de webpagina kan renderen en ligt aan de WebView-provider op het toestel.
+
+Oplossing:
+
+1. Open in de Play Store **Android System WebView** en installeer de nieuwste update.
+2. Werk ook **Google Chrome** bij; Chrome levert op sommige toestellen de WebView-component.
+3. Herstart het toestel volledig.
+4. Start SafeScan opnieuw. Controleer met `adb shell dumpsys webviewupdate` of de provider actief is.
+
+SafeScan gebruikt een lokale asset-laag en schakelt geen onveilige universele file-toegang in. Als WebView nog steeds `process is bad` meldt, moet de WebView-provider via Android/Play Store worden hersteld; dit kan niet betrouwbaar vanuit een gewone app worden gerepareerd.
