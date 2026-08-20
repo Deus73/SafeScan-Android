@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import android.graphics.drawable.GradientDrawable;
 
 /** Native UI host using the existing SafeScan scan engine; no WebView required. */
 public final class NativeMainActivity extends MainActivity {
@@ -28,10 +30,23 @@ public final class NativeMainActivity extends MainActivity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(28, 32, 28, 24);
-        root.setBackgroundColor(Color.rgb(7, 16, 25));
+        root.setBackgroundResource(R.drawable.native_background);
 
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
         TextView title = text(tr("app.title"), 28, Color.WHITE);
-        root.addView(title);
+        header.addView(title, new LinearLayout.LayoutParams(0, -2, 1));
+        Button close = new Button(this);
+        close.setText("×");
+        close.setTextSize(28);
+        close.setTextColor(Color.WHITE);
+        close.setAllCaps(false);
+        close.setBackgroundColor(Color.TRANSPARENT);
+        close.setContentDescription(tr("button.close"));
+        close.setOnClickListener(v -> finish());
+        header.addView(close, new LinearLayout.LayoutParams(64, 64));
+        root.addView(header);
         TextView subtitle = text(tr("app.subtitle"), 16, Color.LTGRAY);
         root.addView(subtitle);
 
@@ -53,17 +68,26 @@ public final class NativeMainActivity extends MainActivity {
 
         Button scan = new Button(this);
         scan.setText(tr("button.scan"));
+        styleButton(scan, true);
         scan.setOnClickListener(v -> runScan());
         root.addView(scan, new LinearLayout.LayoutParams(-1, -2));
-        Button pdf = new Button(this); pdf.setText(tr("button.export_pdf")); pdf.setOnClickListener(v -> exportPdf()); root.addView(pdf);
-        Button email = new Button(this); email.setText(tr("button.email_pdf")); email.setOnClickListener(v -> emailPdf()); root.addView(email);
-        Button backup = new Button(this); backup.setText(tr("button.backup")); backup.setOnClickListener(v -> createBackup()); root.addView(backup);
-        Button restore = new Button(this); restore.setText(tr("button.restore_backup")); restore.setOnClickListener(v -> openRestore()); root.addView(restore);
-        Button advice = new Button(this); advice.setText(tr("button.advice")); advice.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(tr("threat.title")).setMessage(tr("threat.intro")).setPositiveButton(tr("button.close"), null).show()); root.addView(advice);
-        Button forensics = new Button(this); forensics.setText(tr("button.forensics")); forensics.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(tr("button.forensics")).setMessage(boldCommands(tr("forensics.guide"))).setNeutralButton(tr("button.share"), (d, w) -> shareForensics()).setPositiveButton(tr("button.close"), null).show()); root.addView(forensics);
-        Button repair = new Button(this); repair.setText(tr("button.repair")); repair.setOnClickListener(v -> startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS))); root.addView(repair);
-        Button share = new Button(this); share.setText(tr("button.share")); share.setOnClickListener(v -> { Intent i = new Intent(Intent.ACTION_SEND); i.setType("text/plain"); i.putExtra(Intent.EXTRA_TEXT, "https://github.com/Deus73/SafeScan-Android"); startActivity(Intent.createChooser(i, tr("share.chooser"))); }); root.addView(share);
-        Button update = new Button(this); update.setText(tr("button.update")); update.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/Deus73/SafeScan-Android/releases/latest")))); root.addView(update);
+        LinearLayout panel = new LinearLayout(this); panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(10, 10, 10, 10);
+        panel.setBackgroundResource(R.drawable.native_background);
+        root.addView(panel, new LinearLayout.LayoutParams(-1, -2));
+        Button pdf = new Button(this); pdf.setText(tr("button.export_pdf")); styleButton(pdf, false); pdf.setOnClickListener(v -> exportPdf()); panel.addView(pdf);
+        Button email = new Button(this); email.setText(tr("button.email_pdf")); styleButton(email, false); email.setOnClickListener(v -> emailPdf()); panel.addView(email);
+        Button backup = new Button(this); backup.setText(tr("button.backup")); styleButton(backup, false); backup.setOnClickListener(v -> createBackup()); panel.addView(backup);
+        Button restore = new Button(this); restore.setText(tr("button.restore_backup")); styleButton(restore, false); restore.setOnClickListener(v -> openRestore()); panel.addView(restore);
+        Button advice = new Button(this); advice.setText(tr("button.advice")); styleButton(advice, false); advice.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(tr("threat.title")).setMessage(tr("threat.intro")).setPositiveButton(tr("button.close"), null).show()); panel.addView(advice);
+        Button forensics = new Button(this); forensics.setText(tr("button.forensics")); styleButton(forensics, false); forensics.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(tr("button.forensics")).setMessage(boldCommands(tr("forensics.guide"))).setNeutralButton(tr("button.share"), (d, w) -> shareForensics()).setPositiveButton(tr("button.close"), null).show()); panel.addView(forensics);
+        Button repair = new Button(this); repair.setText(tr("button.repair")); styleButton(repair, false); repair.setOnClickListener(v -> startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS))); panel.addView(repair);
+        Button share = new Button(this); share.setText(tr("button.share")); styleButton(share, false); share.setOnClickListener(v -> { Intent i = new Intent(Intent.ACTION_SEND); i.setType("text/plain"); i.putExtra(Intent.EXTRA_TEXT, "https://github.com/Deus73/SafeScan-Android"); startActivity(Intent.createChooser(i, tr("share.chooser"))); }); panel.addView(share);
+        Button update = new Button(this); update.setText(tr("button.update")); styleButton(update, false); update.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/Deus73/SafeScan-Android/releases/latest")))); panel.addView(update);
+        Button about = new Button(this); about.setText(tr("button.about")); styleButton(about, false); about.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(tr("button.about")).setMessage(tr("about.info")).setPositiveButton(tr("button.close"), null).show()); panel.addView(about);
+        addToolButton(panel, tr("button.oxygen"), "oxygen.apk");
+        addToolButton(panel, tr("button.copier"), "copier.apk");
+        addToolButton(panel, tr("button.clone"), "clone.apk");
+        addToolButton(panel, tr("button.payload_dumper"), "payloaddumper.apk");
 
         results = text(tr("scan.not_started"), 15, Color.WHITE);
         ScrollView scroll = new ScrollView(this);
@@ -76,6 +100,16 @@ public final class NativeMainActivity extends MainActivity {
         TextView v = new TextView(this);
         v.setText(value); v.setTextSize(size); v.setTextColor(color); v.setGravity(Gravity.START);
         v.setPadding(0, 12, 0, 12); return v;
+    }
+
+    private void styleButton(Button button, boolean primary) {
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(primary ? Color.argb(225, 62, 211, 177) : Color.argb(185, 24, 55, 70));
+        bg.setCornerRadius(18f);
+        button.setBackground(bg);
+        button.setTextColor(primary ? Color.rgb(5, 25, 31) : Color.rgb(226, 255, 248));
+        button.setAllCaps(false);
+        button.setPadding(18, 12, 18, 12);
     }
 
     private CharSequence boldCommands(String value) {
@@ -96,6 +130,12 @@ public final class NativeMainActivity extends MainActivity {
         share.setType("text/plain");
         share.putExtra(Intent.EXTRA_TEXT, tr("forensics.guide"));
         startActivity(Intent.createChooser(share, tr("share.chooser")));
+    }
+
+    private void addToolButton(LinearLayout panel, String label, String file) {
+        Button tool = new Button(this); tool.setText(label); styleButton(tool, false);
+        tool.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/Deus73/SafeScan-Android/raw/main/tools/" + file))));
+        panel.addView(tool);
     }
 
     private void runScan() {
