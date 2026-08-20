@@ -84,10 +84,7 @@ public final class NativeMainActivity extends MainActivity {
         Button share = new Button(this); share.setText(tr("button.share")); styleButton(share, false); share.setOnClickListener(v -> { Intent i = new Intent(Intent.ACTION_SEND); i.setType("text/plain"); i.putExtra(Intent.EXTRA_TEXT, "https://github.com/Deus73/SafeScan-Android"); startActivity(Intent.createChooser(i, tr("share.chooser"))); }); panel.addView(share);
         Button update = new Button(this); update.setText(tr("button.update")); styleButton(update, false); update.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/Deus73/SafeScan-Android/releases/latest")))); panel.addView(update);
         Button about = new Button(this); about.setText(tr("button.about")); styleButton(about, false); about.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(tr("button.about")).setMessage(tr("about.info")).setPositiveButton(tr("button.close"), null).show()); panel.addView(about);
-        addToolButton(panel, tr("button.oxygen"), "oxygen.apk");
-        addToolButton(panel, tr("button.copier"), "copier.apk");
-        addToolButton(panel, tr("button.clone"), "clone.apk");
-        addToolButton(panel, tr("button.payload_dumper"), "payloaddumper.apk");
+        Button apkDownloads = new Button(this); apkDownloads.setText(tr("button.apk_downloads")); styleButton(apkDownloads, false); apkDownloads.setOnClickListener(v -> showApkDownloads()); panel.addView(apkDownloads);
 
         results = text(tr("scan.not_started"), 15, Color.WHITE);
         ScrollView scroll = new ScrollView(this);
@@ -136,6 +133,15 @@ public final class NativeMainActivity extends MainActivity {
         Button tool = new Button(this); tool.setText(label); styleButton(tool, false);
         tool.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/Deus73/SafeScan-Android/raw/main/tools/" + file))));
         panel.addView(tool);
+    }
+
+    private void showApkDownloads() {
+        LinearLayout choices = new LinearLayout(this); choices.setOrientation(LinearLayout.VERTICAL); choices.setPadding(12, 4, 12, 4);
+        addToolButton(choices, tr("button.oxygen"), "oxygen.apk");
+        addToolButton(choices, tr("button.copier"), "copier.apk");
+        addToolButton(choices, tr("button.clone"), "clone.apk");
+        addToolButton(choices, tr("button.payload_dumper"), "payloaddumper.apk");
+        new android.app.AlertDialog.Builder(this).setTitle(tr("button.apk_downloads")).setView(choices).setNegativeButton(tr("button.close"), null).show();
     }
 
     private void runScan() {
