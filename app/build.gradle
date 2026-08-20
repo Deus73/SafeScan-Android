@@ -1,0 +1,43 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "nl.safescan.local"
+    compileSdk 35
+    buildToolsVersion "35.0.1"
+
+    defaultConfig {
+        applicationId "nl.safescan.local"
+        minSdk 23
+        targetSdk 35
+        versionCode 17
+        versionName "1.6.4"
+    }
+
+    sourceSets {
+        main.java.srcDirs = ["src/main/java"]
+        main.assets.srcDirs = ["src/main/assets"]
+        main.res.srcDirs = ["src/main/res"]
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("../safescan.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+    implementation "org.mozilla.geckoview:geckoview:128.0.20240725162350"
+}
