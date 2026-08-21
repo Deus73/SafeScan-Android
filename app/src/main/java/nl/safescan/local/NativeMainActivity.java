@@ -211,7 +211,7 @@ public final class NativeMainActivity extends MainActivity {
         report.append("KV|Rapporttijd|").append(cleanReport(scan.optString("time"))).append('\n');
         report.append("KV|Toestel|").append(cleanReport(scan.optString("device"))).append('\n');
         report.append("KV|Android|").append(cleanReport(scan.optString("android"))).append('\n');
-        report.append("KV|SafeScan-versie|1.6.4\n");
+        report.append("KV|SafeScan-versie|1.6.5\n");
         report.append("SECTION|").append(tr("pdf.summary")).append('\n');
         report.append("KV|").append(tr("pdf.score_prefix")).append('|').append(scan.optInt("score")).append("/100\n");
         report.append("KV|").append(tr("status.safe")).append('|').append(scan.optInt("safe")).append('\n');
