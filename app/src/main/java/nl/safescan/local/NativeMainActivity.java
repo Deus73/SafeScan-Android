@@ -21,7 +21,9 @@ import android.graphics.drawable.GradientDrawable;
 /** Native UI host using the existing SafeScan scan engine; no WebView required. */
 public final class NativeMainActivity extends MainActivity {
     private TextView results;
+    private TextView score;
     private byte[] pendingFile;
+    private String detailedReport;
     private static final int SAVE_PDF = 501, SAVE_BACKUP = 502, OPEN_BACKUP = 503;
 
     @Override public void onCreate(Bundle state) {
@@ -71,6 +73,13 @@ public final class NativeMainActivity extends MainActivity {
         styleButton(scan, true);
         scan.setOnClickListener(v -> runScan());
         root.addView(scan, new LinearLayout.LayoutParams(-1, -2));
+
+        score = text("", 38, Color.rgb(62, 211, 177));
+        score.setGravity(Gravity.CENTER);
+        score.setVisibility(View.GONE);
+        score.setContentDescription(tr("pdf.score_prefix"));
+        root.addView(score, new LinearLayout.LayoutParams(-1, -2));
+
         LinearLayout panel = new LinearLayout(this); panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(10, 10, 10, 10);
         panel.setBackgroundResource(R.drawable.native_background);
         root.addView(panel, new LinearLayout.LayoutParams(-1, -2));
@@ -145,10 +154,12 @@ public final class NativeMainActivity extends MainActivity {
     }
 
     private void runScan() {
+        score.setVisibility(View.GONE);
         results.setText(tr("scan.running"));
         new Thread(() -> {
             try {
                 JSONObject scan = performScan();
+                int finalScore = scan.optInt("score", 0);
                 JSONArray findings = scan.optJSONArray("findings");
                 StringBuilder out = new StringBuilder();
                 if (findings != null) for (int i = 0; i < findings.length(); i++) {
@@ -157,8 +168,14 @@ public final class NativeMainActivity extends MainActivity {
                             .append(f.optString("title")).append('\n')
                             .append(f.optString("detail")).append("\n\n");
                 }
-                runOnUiThread(() -> results.setText(out.length() == 0 ? tr("scan.no_findings") : out.toString()));
+                detailedReport = buildDetailedReport(scan);
+                runOnUiThread(() -> {
+                    score.setText(tr("pdf.score_prefix") + " " + finalScore + "/100");
+                    score.setVisibility(View.VISIBLE);
+                    results.setText(out.length() == 0 ? tr("scan.no_findings") : out.toString());
+                });
             } catch (Exception e) {
+                runOnUiThread(() -> score.setVisibility(View.GONE));
                 runOnUiThread(() -> results.setText(tr("scan.failed")));
             }
         }, "SafeScanNativeScan").start();
@@ -166,7 +183,8 @@ public final class NativeMainActivity extends MainActivity {
 
     private void exportPdf() {
         try {
-            pendingFile = createDetailedPdf(results.getText().toString());
+            if (detailedReport == null) { results.setText(tr("scan.first")); return; }
+            pendingFile = createDetailedPdf(detailedReport);
             Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT); i.setType("application/pdf");
             i.putExtra(Intent.EXTRA_TITLE, "SafeScan-report.pdf"); i.addCategory(Intent.CATEGORY_OPENABLE); startActivityForResult(i, SAVE_PDF);
         } catch (Exception e) { results.setText(tr("pdf.failed")); }
@@ -174,10 +192,11 @@ public final class NativeMainActivity extends MainActivity {
 
     private void emailPdf() {
         try {
-            byte[] pdf = createDetailedPdf(results.getText().toString());
-            java.io.File f = new java.io.File(getCacheDir(), "SafeScan-report.pdf");
+            if (detailedReport == null) { results.setText(tr("scan.first")); return; }
+            byte[] pdf = createDetailedPdf(detailedReport);
+            java.io.File f = new java.io.File(getCacheDir(), "SafeScan-rapport.pdf");
             try (OutputStream out = new java.io.FileOutputStream(f)) { out.write(pdf); }
-            android.net.Uri uri = android.net.Uri.parse("content://nl.safescan.local.reports/SafeScan-report.pdf");
+            android.net.Uri uri = android.net.Uri.parse("content://nl.safescan.local.reports/SafeScan-rapport.pdf");
             Intent i = new Intent(Intent.ACTION_SEND); i.setType("application/pdf");
             i.putExtra(Intent.EXTRA_SUBJECT, tr("email.subject", "device", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL));
             i.putExtra(Intent.EXTRA_TEXT, tr("email.body", "device", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL));
@@ -185,6 +204,36 @@ public final class NativeMainActivity extends MainActivity {
             startActivity(Intent.createChooser(i, tr("email.chooser")));
         } catch (Exception e) { results.setText(tr("email.failed")); }
     }
+
+    private String buildDetailedReport(JSONObject scan) {
+        StringBuilder report = new StringBuilder();
+        report.append("SECTION|").append(tr("pdf.identification")).append('\n');
+        report.append("KV|Rapporttijd|").append(cleanReport(scan.optString("time"))).append('\n');
+        report.append("KV|Toestel|").append(cleanReport(scan.optString("device"))).append('\n');
+        report.append("KV|Android|").append(cleanReport(scan.optString("android"))).append('\n');
+        report.append("KV|SafeScan-versie|1.6.4\n");
+        report.append("SECTION|").append(tr("pdf.summary")).append('\n');
+        report.append("KV|").append(tr("pdf.score_prefix")).append('|').append(scan.optInt("score")).append("/100\n");
+        report.append("KV|").append(tr("status.safe")).append('|').append(scan.optInt("safe")).append('\n');
+        report.append("KV|").append(tr("status.warning")).append('|').append(scan.optInt("warn")).append('\n');
+        report.append("KV|").append(tr("status.high_risk")).append('|').append(scan.optInt("high")).append('\n');
+        String priority = scan.optInt("high") > 0 ? tr("report.priority.high")
+                : scan.optInt("warn") > 0 ? tr("report.priority.warning") : tr("report.priority.safe");
+        report.append("TEXT|").append(cleanReport(priority)).append('\n');
+        report.append("SECTION|").append(tr("pdf.findings")).append('\n');
+        JSONArray findings = scan.optJSONArray("findings");
+        if (findings != null) for (int i = 0; i < findings.length(); i++) {
+            JSONObject finding = findings.optJSONObject(i); if (finding == null) continue;
+            report.append("FINDING|").append(cleanReport(finding.optString("level"))).append('|')
+                    .append(cleanReport(finding.optString("status"))).append('|')
+                    .append(cleanReport(finding.optString("title"))).append('\n');
+            report.append("DETAIL|").append(cleanReport(finding.optString("detail"))).append('\n');
+            report.append("ADVICE|").append(cleanReport(tr("advice.default_report"))).append('\n');
+        }
+        return report.toString();
+    }
+
+    private String cleanReport(String value) { return value == null ? "" : value.replace('|', '/').replace('\n', ' ').replace('\r', ' ').trim(); }
 
     private void createBackup() {
         try {
